@@ -20,22 +20,16 @@ const skyBlue     = render.makeColor(83, 199, 226);
 const smallGreen  = render.makeColor(122, 193, 115);
 const coralRed    = render.makeColor(240, 84, 87);
 const navyPill    = render.makeColor(16, 96, 159);
-const bmoCyan     = render.makeColor(120, 235, 224);
-const timeWhite   = render.makeColor(255, 255, 255);
+const textWhite   = render.makeColor(255, 255, 255);
 const spinnerBase = render.makeColor(15, 94, 75);
 
-const timeFont = new render.Font("Leco-Bold", 26); // includes AM/PM glyphs
-const dateFont = new render.Font("Gothic-Bold", 14);
-const wordFont = new render.Font("Gothic-Bold", 18);
 const statusFont = new render.Font("Gothic-Bold", 14);
-
-const DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 // The button used to talk to BMO. Hold it to dictate, release to send.
 const TALK_BUTTON = "select";
 
 // Ask -> Listening -> Loading -> Speaking -> (5s) -> Ask, or -> Error -> Ask.
-let appState = "TIME"; // TIME | LISTENING | LOADING | SPEAKING | ERROR
+let appState = "IDLE"; // IDLE | LISTENING | LOADING | SPEAKING | ERROR
 let blinkClosed = false;
 let talkOpen = false;
 let spinAngle = 0;
@@ -60,9 +54,9 @@ function layout() {
 	const controlsY = speakerY + speakerH + Math.round(h * 0.03);
 	const controlsH = Math.round(h * 0.23);
 
-	const timeY = controlsY + controlsH + Math.round(h * 0.045);
+	const labelY = controlsY + controlsH + Math.round(h * 0.045);
 
-	return { w, h, faceX, faceY, faceW, faceH, speakerY, speakerH, controlsY, controlsH, timeY };
+	return { w, h, faceX, faceY, faceW, faceH, speakerY, speakerH, controlsY, controlsH, labelY };
 }
 
 function fillTriangleUp(color, cx, topY, halfBase, heightPx) {
@@ -208,35 +202,17 @@ function draw() {
 	} else if (appState === "ERROR") {
 		drawErrorFace(L);
 	} else {
-		drawFace(L, appState === "TIME" && blinkClosed, appState === "SPEAKING" && talkOpen);
+		drawFace(L, appState === "IDLE" && blinkClosed, appState === "SPEAKING" && talkOpen);
 	}
 
 	drawSpeaker(L);
 	drawControls(L);
 
-	if (appState === "TIME") {
-		const now = new Date();
-		let h = now.getHours();
-		const ampm = h >= 12 ? "PM" : "AM";
-		h = h % 12;
-		if (h === 0) h = 12;
-		const mm = String(now.getMinutes()).padStart(2, "0");
-		const timeStr = `${h}:${mm} ${ampm}`;
-
-		const tw = render.getTextWidth(timeStr, timeFont);
-		render.drawText(timeStr, timeFont, timeWhite, L.w / 2 - tw / 2, L.timeY);
-
-		const dateStr = `${DAYS[now.getDay()]} ${now.getMonth() + 1}/${now.getDate()}`;
-		const dw = render.getTextWidth(dateStr, dateFont);
-		const dateY = L.timeY + timeFont.height + 2;
-		render.drawText(dateStr, dateFont, timeWhite, L.w / 2 - dw / 2, dateY);
-	} else {
+	if (appState !== "IDLE") {
 		const label = statusLabel();
 		const lw = render.getTextWidth(label, statusFont);
-		render.drawText(label, statusFont, timeWhite, L.w / 2 - lw / 2, L.timeY + 10);
+		render.drawText(label, statusFont, textWhite, L.w / 2 - lw / 2, L.labelY + 10);
 	}
-
-	render.drawText("BMO", wordFont, bmoCyan, 8, L.h - wordFont.height - 4);
 
 	render.end();
 }
@@ -247,9 +223,9 @@ function clearStateTimers() {
 	if (talkTimer) { clearInterval(talkTimer); talkTimer = null; }
 }
 
-function goToTime() {
+function goToIdle() {
 	clearStateTimers();
-	appState = "TIME";
+	appState = "IDLE";
 	draw();
 }
 
@@ -277,24 +253,24 @@ function goToSpeaking(durationMs) {
 		talkOpen = !talkOpen;
 		draw();
 	}, 180);
-	stateTimer = setTimeout(goToTime, durationMs);
+	stateTimer = setTimeout(goToIdle, durationMs);
 }
 
 function goToError() {
 	clearStateTimers();
 	appState = "ERROR";
 	draw();
-	stateTimer = setTimeout(goToTime, 3000);
+	stateTimer = setTimeout(goToIdle, 3000);
 }
 
 function scheduleBlink() {
 	blinkTimer = setTimeout(() => {
-		if (appState === "TIME") {
+		if (appState === "IDLE") {
 			blinkClosed = true;
 			draw();
 			setTimeout(() => {
 				blinkClosed = false;
-				if (appState === "TIME") draw();
+				if (appState === "IDLE") draw();
 				scheduleBlink();
 			}, 140);
 		} else {
@@ -303,9 +279,6 @@ function scheduleBlink() {
 	}, 2600 + Math.random() * 2600);
 }
 
-watch.addEventListener("minutechange", () => {
-	if (appState === "TIME") draw();
-});
 watch.addEventListener("resize", () => draw());
 
 scheduleBlink();
@@ -351,7 +324,7 @@ const dictation = new Dictation({
 			sendPrompt(text);
 		} else {
 			// Dictation completed but produced no usable text — surface it
-			// instead of silently dropping back to the clock.
+			// instead of silently dropping back to idle.
 			console.log("dictation onReadable: empty text");
 			goToError();
 		}
@@ -368,7 +341,7 @@ new Button({
 	onPush(down, type) {
 		if (type !== TALK_BUTTON) return;
 		if (down) {
-			if (appState !== "TIME") return; // one request at a time
+			if (appState !== "IDLE") return; // one request at a time
 			goToListening();
 			dictation.start();
 		} else {

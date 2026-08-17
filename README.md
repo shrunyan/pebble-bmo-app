@@ -1,4 +1,4 @@
-# pebble-bmo
+# pebble-bmo-app
 
 A Pebble Alloy project — embedded JavaScript on the watch, powered by Moddable
 XS, alongside C.

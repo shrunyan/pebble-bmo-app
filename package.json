@@ -1,5 +1,5 @@
 {
-  "name": "pebble-bmo",
+  "name": "pebble-bmo-app",
   "author": "stubu",
   "version": "1.0.0",
   "keywords": [
@@ -10,7 +10,7 @@
     "@rebble/clay": "^1.0.10"
   },
   "pebble": {
-    "displayName": "pebble-bmo",
+    "displayName": "BMO",
     "uuid": "c6477360-fd8d-435e-986c-7b00c167db76",
     "projectType": "moddable",
     "sdkVersion": "3",
@@ -32,7 +32,14 @@
       "HELLO"
     ],
     "resources": {
-      "media": []
+      "media": [
+        {
+          "type": "bitmap",
+          "name": "BMO_ICON",
+          "file": "images/bmo_icon.png",
+          "menuIcon": true
+        }
+      ]
     }
   }
 }
