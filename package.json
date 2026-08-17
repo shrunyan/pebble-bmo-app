@@ -1,0 +1,38 @@
+{
+  "name": "pebble-bmo",
+  "author": "stubu",
+  "version": "1.0.0",
+  "keywords": [
+    "pebble-app"
+  ],
+  "private": true,
+  "dependencies": {
+    "@rebble/clay": "^1.0.10"
+  },
+  "pebble": {
+    "displayName": "pebble-bmo",
+    "uuid": "c6477360-fd8d-435e-986c-7b00c167db76",
+    "projectType": "moddable",
+    "sdkVersion": "3",
+    "enableMultiJS": true,
+    "targetPlatforms": [
+      "emery",
+      "gabbro"
+    ],
+    "watchapp": {
+      "watchface": false
+    },
+    "capabilities": [
+      "configurable"
+    ],
+    "messageKeys": [
+      "PROMPT",
+      "DURATION",
+      "ERR",
+      "HELLO"
+    ],
+    "resources": {
+      "media": []
+    }
+  }
+}

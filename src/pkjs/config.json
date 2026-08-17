@@ -1,0 +1,32 @@
+[
+	{
+		"type": "heading",
+		"defaultValue": "BMO Settings",
+		"size": 2
+	},
+	{
+		"type": "text",
+		"defaultValue": "Enter your Google Gemini API key. It's stored only on this phone and used to answer what you ask BMO."
+	},
+	{
+		"type": "section",
+		"items": [
+			{
+				"type": "input",
+				"messageKey": "apiKey",
+				"label": "Google Gemini API key",
+				"defaultValue": "",
+				"attributes": {
+					"type": "password",
+					"placeholder": "AIza...",
+					"autocapitalize": "off",
+					"autocorrect": "off"
+				}
+			}
+		]
+	},
+	{
+		"type": "submit",
+		"defaultValue": "Save"
+	}
+]
